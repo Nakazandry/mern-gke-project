@@ -1,32 +1,50 @@
-name: Backend CI
+name: Backend CI/CD
 
 on:
   push:
     branches:
       - main
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend.yml'
+
+permissions:
+  contents: read
+  id-token: write
 
 jobs:
-
-  backend-build:
-
+  build-deploy:
     runs-on: ubuntu-latest
 
     steps:
-
-      - name: Télécharger projet
+      - name: Télécharger le projet
         uses: actions/checkout@v4
 
       - name: Login DockerHub
         uses: docker/login-action@v3
-
         with:
           username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_PASS }}
 
       - name: Build backend
-        run: |
-          docker build -t nakazandry/backend-mern:v2 ./backend
+        run: docker build -t nakazandry/backend-mern:v2 ./backend
 
       - name: Push backend
+        run: docker push nakazandry/backend-mern:v2
+
+      - name: Auth Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/286789150640/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+          service_account: github-actions@project-0f0676cb-2b80-4189-8cd.iam.gserviceaccount.com
+
+      - name: Installer gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Connecter GKE
+        run: gcloud container clusters get-credentials cluster-1 --zone us-central1-a --project project-0f0676cb-2b80-4189-8cd
+
+      - name: Déployer backend sur GKE
         run: |
-          docker push nakazandry/backend-mern:v2
+          kubectl set image deployment/backend-deployment backend=nakazandry/backend-mern:v2
+          kubectl rollout status deployment/backend-deployment
