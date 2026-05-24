@@ -1,0 +1,32 @@
+name: Backend CI
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+
+  backend-build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Télécharger projet
+        uses: actions/checkout@v4
+
+      - name: Login DockerHub
+        uses: docker/login-action@v3
+
+        with:
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_PASS }}
+
+      - name: Build backend
+        run: |
+          docker build -t nakazandry/backend-mern:v2 ./backend
+
+      - name: Push backend
+        run: |
+          docker push nakazandry/backend-mern:v2
