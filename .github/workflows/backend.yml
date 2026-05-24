@@ -50,3 +50,4 @@ jobs:
         run: |
           kubectl set image deployment/backend-deployment backend=nakazandry/backend-mern:v2
           kubectl rollout status deployment/backend-deployment
+
