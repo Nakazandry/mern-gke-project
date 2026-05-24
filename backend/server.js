@@ -12,12 +12,9 @@ mongoose.connect(process.env.MONGO_URI)
   .catch(err => console.log("Erreur MongoDB:", err));
  
 // test API
-app.get("/", (req, res) => {
-  res.json({
-    message: "Backend MERN fonctionne 🚀",
-    status: "OK"
-  });
-});
+app.get("/", (req,res)=>{
+   res.send("CI/CD fonctionne 🚀 version 2");
+})
 
 app.post("/etudiants", async (req, res) => {
   try {
